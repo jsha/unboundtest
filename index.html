@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>Check DNS results from Unbound</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+          body {
+            max-width: 40em;
+            margin-left: auto;
+            margin-right: auto;
+            margin-top: 2em;
+          }
+        </style>
+    </head>
+    <body>
+        <h1>Unbound DNS checker</h1>
+        <p>
+        Use this server to make DNS queries against an Unbound instance and get
+        logs. The Unbound instance is configured very similarly to
+        <a href="https://letsencrypt.org">Let's
+        Encrypt's</a> production servers, and is started fresh for each query so
+        there are no caching effects. If you are having trouble diagnosing a
+        DNS problem reported by Let's Encrypt, this may help you debug it.
+        Common problems include: invalid DNSSEC records, failure to implement <a
+        href="https://tools.ietf.org/html/draft-vixie-dnsext-dns0x20-00">DNS 0x20
+        (mixed case)</a>, timeouts, and flaky servers.
+        </p>
+        <p>
+        Once you've made a query, you'll get a URL you can share. Note that URLs
+        are currently only persisted in memory, so they are likely to disappear
+        after a few hours or days when the server is restarted.
+        <a href="https://github.com/jsha/dnstest/">Source code on GitHub</a>.
+        View the <a href="/conf">Unbound config</a>.
+        </p>
+        <form action="/q">
+          <label for="type">Query type:</label>
+          <input type="radio" name="type" value="CAA" checked="checked">CAA</input>
+          <input type="radio" name="type" value="A">A</input>
+          <input type="radio" name="type" value="AAAA">AAAA</input>
+          <input type="radio" name="type" value="TXT">TXT</input>
+          <br/>
+          <label for="qname">Domain:</label>
+          <input type="text" name="qname"></input>
+          <button id=submit>Query</button>
+        </form>
+        <script type="text/javascript">
+        </script>
+    </body>
+</html>

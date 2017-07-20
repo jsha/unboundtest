@@ -1,0 +1,4 @@
+# Vim swap files
+*.sw?
+
+tags
