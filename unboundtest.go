@@ -21,7 +21,7 @@ import (
 const unboundConfig = "unbound.conf"
 
 // A regexp for reasonable close-to-valid DNS names
-var dnsish = regexp.MustCompile("^[A-Za-z0-9-.]+$")
+var dnsish = regexp.MustCompile("^[A-Za-z0-9-_.]+$")
 
 // Only one Unbound should run at once, otherwise listen port will collide
 var unboundMutex sync.Mutex
@@ -139,6 +139,8 @@ func doQuery(ctx context.Context, q string, typ uint16, w io.Writer) error {
 		cancel()
 		cmd.Wait()
 	}()
+	// Unbound logs will be sent on this channel once done.
+	logs := make(chan []byte)
 	pipe, err := cmd.StderrPipe()
 	if err != nil {
 		return err
@@ -146,7 +148,12 @@ func doQuery(ctx context.Context, q string, typ uint16, w io.Writer) error {
 	if err := cmd.Start(); err != nil {
 		return err
 	}
-	logs := make(chan []byte)
+	defer func() {
+		// Kill Unbound, then finish reading off the logs.
+		cancel()
+		w.Write(<-logs)
+		cmd.Wait()
+	}()
 	go func() {
 		// Read Unbound's stderr logs as they come in, both to avoid blocking and to
 		// ensure we show what the logs said even if the query times out.
@@ -166,9 +173,5 @@ func doQuery(ctx context.Context, q string, typ uint16, w io.Writer) error {
 		return err
 	}
 	fmt.Fprintf(w, "\nResponse:\n%s\n", in)
-	// Kill Unbound, then finish reading off the logs.
-	cancel()
-	w.Write(<-logs)
-	cmd.Wait()
 	return nil
 }
