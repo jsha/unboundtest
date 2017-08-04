@@ -168,10 +168,24 @@ func doQuery(ctx context.Context, q string, typ uint16, w io.Writer) error {
 	m := new(dns.Msg)
 	m.SetQuestion(q, typ)
 	c := new(dns.Client)
-	in, _, err := c.Exchange(m, "127.0.0.1:1053")
-	if err != nil {
-		return err
+	// The default timeout in the dns package is 2 seconds, which is too short for
+	// some domains. Increase to 30 seconds, limited by the context if applicable.
+	// Also retry on timeouts.
+	c.Timeout = time.Second * 30
+	for {
+		in, _, err := c.ExchangeContext(ctx, m, "127.0.0.1:1053")
+		if err != nil {
+			return err
+		}
+		if err == nil {
+			fmt.Fprintf(w, "\nResponse:\n%s\n", in)
+			return nil
+		}
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+			continue
+		}
 	}
-	fmt.Fprintf(w, "\nResponse:\n%s\n", in)
-	return nil
 }
