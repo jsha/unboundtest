@@ -8,4 +8,4 @@ RUN mkdir -p /var/run/unboundtest
 COPY index.html root.key unbound.conf /var/run/unboundtest/
 WORKDIR /var/run/unboundtest
 EXPOSE 1232
-CMD /usr/bin/unboundtest
+CMD ["/usr/bin/unboundtest"]
