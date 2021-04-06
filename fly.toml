@@ -1,0 +1,32 @@
+# fly.toml file generated for multi-dns on 2021-04-05T17:40:41-07:00
+
+app = "multi-dns"
+
+kill_signal = "SIGINT"
+kill_timeout = 5
+
+[build]
+  image = "j4cob/unboundtest:latest"
+
+[[services]]
+  internal_port = 1232
+  protocol = "tcp"
+
+  [services.concurrency]
+    hard_limit = 25
+    soft_limit = 20
+
+  [[services.ports]]
+    handlers = ["http"]
+    port = "80"
+
+  [[services.ports]]
+    handlers = ["tls", "http"]
+    port = "443"
+
+  [[services.tcp_checks]]
+    grace_period = "1s"
+    interval = "15s"
+    port = "8080"
+    restart_limit = 6
+    timeout = "2s"
