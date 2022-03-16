@@ -1,6 +1,6 @@
-FROM ubuntu:hirsute
+FROM ubuntu:focal
 ENV DEBIAN_FRONTEND noninteractive
-RUN apt update && apt -y install unbound golang-go
+RUN apt update && apt -y install unbound golang-go ca-certificates
 COPY . /unboundtest
 WORKDIR /unboundtest
 RUN GOBIN=/usr/bin go install ./
