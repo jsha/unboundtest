@@ -167,6 +167,8 @@ func doQuery(ctx context.Context, q string, typ uint16, w io.Writer) error {
 	time.Sleep(time.Second)
 	m := new(dns.Msg)
 	m.SetQuestion(q, typ)
+	m.AuthenticatedData = true
+	m.SetEdns0(4096, true)
 	c := new(dns.Client)
 	// The default timeout in the dns package is 2 seconds, which is too short for
 	// some domains. Increase to 30 seconds, limited by the context if applicable.
