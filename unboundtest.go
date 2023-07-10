@@ -18,7 +18,7 @@ import (
 	"github.com/miekg/dns"
 )
 
-const unboundConfig = "unbound.conf"
+const unboundConfig = "/etc/unbound/unbound.conf"
 
 // A regexp for reasonable close-to-valid DNS names
 var dnsish = regexp.MustCompile("^[A-Za-z0-9-_.]+$")
