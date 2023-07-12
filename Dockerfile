@@ -1,4 +1,4 @@
-FROM ubuntu:focal
+FROM ubuntu:lunar
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt update && apt -y install unbound golang-go ca-certificates
 COPY . /unboundtest
