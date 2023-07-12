@@ -1,4 +1,5 @@
 FROM ubuntu:lunar
+LABEL org.opencontainers.image.source=https://github.com/jsha/unboundtest
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt update && apt -y install unbound golang-go ca-certificates
 COPY . /unboundtest
