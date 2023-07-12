@@ -1,0 +1,27 @@
+name: Build and publish Docker container
+
+on:
+  push:
+    branches:
+      - main
+      - ghcr
+
+jobs:
+  build-and-publish:
+    name: Build and publish Docker container
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Login to Packages Container registry
+        uses: docker/login-action@465a07811f14bebb1938fbed4728c6a1ff8901fc
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build
+        run: docker build --tag ghcr.io/jsha/unboundtest:latest .
+
+      - name: Push
+        run: docker push ghcr.io/jsha/unboundtest:latest
