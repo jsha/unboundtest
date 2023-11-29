@@ -21,7 +21,13 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build
-        run: docker build --tag ghcr.io/jsha/unboundtest:latest .
+        run: podman build --tag "ghcr.io/jsha/unboundtest:${GITHUB_SHA}" .
+
+      - name: Tag latest
+        run: podman tag "ghcr.io/jsha/unboundtest:${GITHUB_SHA}" "ghcr.io/jsha/unboundtest/latest" .
 
       - name: Push
-        run: docker push ghcr.io/jsha/unboundtest:latest
+        run: podman push "ghcr.io/jsha/unboundtest:${GITHUB_SHA}"
+
+      - name: Push
+        run: podman push "ghcr.io/jsha/unboundtest:latest"
