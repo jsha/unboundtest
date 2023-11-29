@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base32"
+	"flag"
 	"fmt"
 	"io"
 	"net/http"
@@ -26,12 +27,16 @@ var dnsish = regexp.MustCompile("^[A-Za-z0-9-_.]+$")
 // Only one Unbound should run at once, otherwise listen port will collide
 var unboundMutex sync.Mutex
 
+var listenAddr = flag.String("listen", ":1232", "The address on which to listen for incoming Web requests")
+var unboundAddr = flag.String("unboundAddress", "127.0.0.1:1053", "The address the unbound.conf instructs Unbound to listen on")
+
 func main() {
+	flag.Parse()
 	http.HandleFunc("/", indexHandler)
 	http.HandleFunc("/conf", configHandler)
 	http.HandleFunc("/q", queryHandler)
 	http.HandleFunc("/m/", memoryHandler)
-	http.ListenAndServe(":1232", nil)
+	http.ListenAndServe(*listenAddr, nil)
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
@@ -175,7 +180,7 @@ func doQuery(ctx context.Context, q string, typ uint16, w io.Writer) error {
 	// Also retry on timeouts.
 	c.Timeout = time.Second * 30
 	for {
-		in, _, err := c.ExchangeContext(ctx, m, "127.0.0.1:1053")
+		in, _, err := c.ExchangeContext(ctx, m, *unboundAddr)
 		if err != nil {
 			return err
 		}
