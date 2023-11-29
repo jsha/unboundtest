@@ -29,6 +29,7 @@ var listenAddr = flag.String("listen", ":1232", "The address on which to listen 
 var unboundAddr = flag.String("unboundAddress", "127.0.0.1:1053", "The address the unbound.conf instructs Unbound to listen on")
 var unboundConfig = flag.String("unboundConfig", "unbound.conf", "The path to the unbound.conf file")
 var unboundExec = flag.String("unboundExec", "unbound", "The path to the unbound executable")
+var indexFile = flag.String("index", "index.html", "The path to index.html")
 
 func main() {
 	flag.Parse()
@@ -44,7 +45,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	file, err := os.Open("index.html")
+	file, err := os.Open(*indexFile)
 	if err != nil {
 		fmt.Fprintln(w, err)
 		return
