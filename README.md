@@ -21,3 +21,18 @@ docker run unboundtest
 
 Then use `docker ps` and `docker inspect` to find the IP address of the
 unboundtest container, and visit that IP address on port 1232.
+
+## CLI
+```
+Usage of unboundtest:
+  -listen string
+        The address on which to listen for incoming Web requests (default ":1232")
+  -unboundAddress string
+        The address the unbound.conf instructs Unbound to listen on (default "127.0.0.1:1053")
+  -unboundConfig string
+        The path to the unbound.conf file (default "unbound.conf")
+  -unboundExec string
+        The path to the unbound executable (default "unbound")
+  -index string
+        The path to the index.html (default "index.html")
+```

@@ -19,13 +19,17 @@ import (
 	"github.com/miekg/dns"
 )
 
-var unboundConfig = flag.String("config", "unbound.conf", "Path to unbound.conf")
-
 // A regexp for reasonable close-to-valid DNS names
 var dnsish = regexp.MustCompile("^[A-Za-z0-9-_.]+$")
 
 // Only one Unbound should run at once, otherwise listen port will collide
 var unboundMutex sync.Mutex
+
+var listenAddr = flag.String("listen", ":1232", "The address on which to listen for incoming Web requests")
+var unboundAddr = flag.String("unboundAddress", "127.0.0.1:1053", "The address the unbound.conf instructs Unbound to listen on")
+var unboundConfig = flag.String("unboundConfig", "unbound.conf", "The path to the unbound.conf file")
+var unboundExec = flag.String("unboundExec", "unbound", "The path to the unbound executable")
+var indexFile = flag.String("index", "index.html", "The path to index.html")
 
 func main() {
 	flag.Parse()
@@ -33,7 +37,7 @@ func main() {
 	http.HandleFunc("/conf", configHandler)
 	http.HandleFunc("/q", queryHandler)
 	http.HandleFunc("/m/", memoryHandler)
-	http.ListenAndServe(":1232", nil)
+	http.ListenAndServe(*listenAddr, nil)
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
@@ -41,7 +45,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	file, err := os.Open("index.html")
+	file, err := os.Open(*indexFile)
 	if err != nil {
 		fmt.Fprintln(w, err)
 		return
@@ -136,7 +140,7 @@ func doQuery(ctx context.Context, q string, typ uint16, w io.Writer) error {
 		q = q + "."
 	}
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
-	cmd := exec.CommandContext(ctx, "unbound", "-d", "-c", *unboundConfig)
+	cmd := exec.CommandContext(ctx, *unboundExec, "-d", "-c", *unboundConfig)
 	defer func() {
 		cancel()
 		cmd.Wait()
@@ -177,7 +181,7 @@ func doQuery(ctx context.Context, q string, typ uint16, w io.Writer) error {
 	// Also retry on timeouts.
 	c.Timeout = time.Second * 30
 	for {
-		in, _, err := c.ExchangeContext(ctx, m, "127.0.0.1:1053")
+		in, _, err := c.ExchangeContext(ctx, m, *unboundAddr)
 		if err != nil {
 			return err
 		}

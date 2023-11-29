@@ -33,4 +33,4 @@ COPY index.html root.key /work/
 COPY unbound.conf /etc/unbound/
 WORKDIR /work/
 EXPOSE 1232
-CMD ["/usr/bin/unboundtest", "-config", "/etc/unbound/unbound.conf"]
+CMD ["/usr/bin/unboundtest", "-unboundConfig", "/etc/unbound/unbound.conf"]
