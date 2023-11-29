@@ -19,8 +19,6 @@ import (
 	"github.com/miekg/dns"
 )
 
-const unboundConfig = "unbound.conf"
-
 // A regexp for reasonable close-to-valid DNS names
 var dnsish = regexp.MustCompile("^[A-Za-z0-9-_.]+$")
 
@@ -29,6 +27,8 @@ var unboundMutex sync.Mutex
 
 var listenAddr = flag.String("listen", ":1232", "The address on which to listen for incoming Web requests")
 var unboundAddr = flag.String("unboundAddress", "127.0.0.1:1053", "The address the unbound.conf instructs Unbound to listen on")
+var unboundConfig = flag.String("unboundConfig", "unbound.conf", "The path to the unbound.conf file")
+var unboundExec = flag.String("unboundExec", "unbound", "The path to the unbound executable")
 
 func main() {
 	flag.Parse()
@@ -55,7 +55,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func configHandler(w http.ResponseWriter, r *http.Request) {
-	file, err := os.Open(unboundConfig)
+	file, err := os.Open(*unboundConfig)
 	if err != nil {
 		fmt.Fprintln(w, err)
 		return
@@ -139,7 +139,7 @@ func doQuery(ctx context.Context, q string, typ uint16, w io.Writer) error {
 		q = q + "."
 	}
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
-	cmd := exec.CommandContext(ctx, "unbound", "-d", "-c", unboundConfig)
+	cmd := exec.CommandContext(ctx, *unboundExec, "-d", "-c", *unboundConfig)
 	defer func() {
 		cancel()
 		cmd.Wait()

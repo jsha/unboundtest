@@ -29,4 +29,8 @@ Usage of unboundtest:
     	The address on which to listen for incoming Web requests (default ":1232")
   -unboundAddress string
     	The address the unbound.conf instructs Unbound to listen on (default "127.0.0.1:1053")
+  -unboundConfig string
+    	The path to the unbound.conf file (default "unbound.conf")
+  -unboundExec string
+    	The path to the unbound executable (default "unbound")
 ```
