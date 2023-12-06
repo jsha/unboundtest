@@ -5,12 +5,14 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base32"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"os/exec"
 	"regexp"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -111,30 +113,35 @@ func queryHandler(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
+	unboundVersion := queryParams.Get("unbound_version")
 
 	var buf = new(bytes.Buffer)
-	doQuery1(r.Context(), qname, typ, buf)
+	doQuery1(r.Context(), unboundVersion, qname, typ, buf)
 	idStr := memory.store(buf.Bytes())
 	http.Redirect(w, r, fmt.Sprintf("/m/%s/%s/%s", dns.TypeToString[typ], qname, idStr), http.StatusTemporaryRedirect)
 }
 
-func doQuery1(ctx context.Context, q string, typ uint16, w io.Writer) {
+func doQuery1(ctx context.Context, unboundVersion, q string, typ uint16, w io.Writer) {
 	fmt.Fprintf(w, "Query results for %s %s\n", dns.TypeToString[typ], q)
 	unboundMutex.Lock()
 	defer unboundMutex.Unlock()
-	err := doQuery(ctx, q, typ, w)
+	err := doQuery(ctx, unboundVersion, q, typ, w)
 	if err != nil {
 		fmt.Fprintf(w, "\n\nError running query: %s\n", err)
 	}
 }
 
-func doQuery(ctx context.Context, q string, typ uint16, w io.Writer) error {
+func doQuery(ctx context.Context, unboundVersion, q string, typ uint16, w io.Writer) error {
 	// Automatically make the query name fully-qualified.
 	if !strings.HasSuffix(q, ".") {
 		q = q + "."
 	}
+	if !slices.Contains([]string{"1.16", "1.18"}, unboundVersion) {
+		return errors.New("invalid unbound version")
+	}
+	unbound := fmt.Sprintf("unbound%s", unboundVersion)
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
-	cmd := exec.CommandContext(ctx, "unbound", "-d", "-c", unboundConfig)
+	cmd := exec.CommandContext(ctx, unbound, "-d", "-c", unboundConfig)
 	defer func() {
 		cancel()
 		cmd.Wait()
