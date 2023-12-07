@@ -23,11 +23,11 @@ jobs:
       - name: Build
         run: podman build --tag "ghcr.io/jsha/unboundtest:${GITHUB_SHA}" .
 
-      - name: Tag latest
-        run: podman tag "ghcr.io/jsha/unboundtest:${GITHUB_SHA}" "ghcr.io/jsha/unboundtest/latest"
-
       - name: Push
         run: podman push "ghcr.io/jsha/unboundtest:${GITHUB_SHA}"
 
-      - name: Push
-        run: podman push "ghcr.io/jsha/unboundtest:latest"
+      - name: Tag latest
+        run: podman tag "ghcr.io/jsha/unboundtest:${GITHUB_SHA}" "ghcr.io/jsha/unboundtest/latest"
+
+      - name: Push latest
+        run: podman push "ghcr.io/jsha/unboundtest/latest"
