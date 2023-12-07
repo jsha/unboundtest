@@ -1,32 +1,37 @@
-# fly.toml file generated for multi-dns on 2021-04-05T17:40:41-07:00
+# fly.toml app configuration file generated for unboundtest on 2023-12-07T11:16:27-08:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
 
-app = "multi-dns"
-
+app = "unboundtest"
+primary_region = "sea"
 kill_signal = "SIGINT"
-kill_timeout = 5
+kill_timeout = "5s"
 
 [build]
-  image = "j4cob/unboundtest:latest"
+  image = "ghcr.io/jsha/unboundtest/latest"
 
 [[services]]
-  internal_port = 1232
   protocol = "tcp"
-
-  [services.concurrency]
-    hard_limit = 25
-    soft_limit = 20
+  internal_port = 1232
 
   [[services.ports]]
+    port = 80
     handlers = ["http"]
-    port = "80"
 
   [[services.ports]]
+    port = 443
     handlers = ["tls", "http"]
-    port = "443"
+  [services.concurrency]
+    hard_limit = 1
+    soft_limit = 1
 
   [[services.tcp_checks]]
-    grace_period = "1s"
     interval = "15s"
-    port = "8080"
-    restart_limit = 6
     timeout = "2s"
+    grace_period = "1s"
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 1024
