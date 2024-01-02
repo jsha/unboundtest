@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"compress/gzip"
 	"context"
 	"crypto/rand"
 	"encoding/base32"
@@ -75,16 +76,34 @@ func (r *recorder) store(b []byte) string {
 	rand.Read(id[:])
 	idStr := base32.StdEncoding.EncodeToString(id[:])
 
+	buf := new(bytes.Buffer)
+	w := gzip.NewWriter(buf)
+	w.Write(b)
+	w.Close()
+
 	r.Lock()
 	defer r.Unlock()
-	r.archive[idStr] = b
+	r.archive[idStr] = buf.Bytes()
 	return idStr
 }
 
-func (r *recorder) get(idStr string) []byte {
+func (r *recorder) get(idStr string) ([]byte, error) {
 	r.Lock()
 	defer r.Unlock()
-	return r.archive[idStr]
+	gz := r.archive[idStr]
+	if gz == nil {
+		return nil, nil
+	}
+	reader, err := gzip.NewReader(bytes.NewReader(gz))
+	if err != nil {
+		return nil, err
+	}
+	bytes, err := io.ReadAll(reader)
+	if err != nil {
+		return nil, err
+	}
+
+	return bytes, nil
 }
 
 var memory = &recorder{
@@ -97,7 +116,12 @@ func memoryHandler(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	body := memory.get(components[3])
+	body, err := memory.get(components[3])
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Error reading logs: %s\n", err)
+		return
+	}
 	if body == nil {
 		http.NotFound(w, r)
 		return
