@@ -6,7 +6,7 @@ WORKDIR /unboundtest-repo
 RUN GOBIN=/usr/bin CGO_ENABLED=0 go install .
 
 FROM alpine:latest AS unbound
-ARG UNBOUND_VERSION=1.18.0
+ARG UNBOUND_VERSION=1.19.1
 RUN apk update
 RUN apk add curl
 RUN curl -o unbound.tgz https://nlnetlabs.nl/downloads/unbound/unbound-$UNBOUND_VERSION.tar.gz
