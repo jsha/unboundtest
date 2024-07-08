@@ -36,3 +36,14 @@ Usage of unboundtest:
   -index string
         The path to the index.html (default "index.html")
 ```
+
+## Deploying
+
+This service runs at https://unboundtest.com/, on fly.io. It uses a Docker image
+automatically built in GitHub Actions and pushed to the the GitHub Container
+Registry. The build is kicked off by pushes to the `main` branch, and pushes
+the image to a `latest` tag. See .github/workflows.
+
+Once a set of changes is pushed and the latest image is built, if you have the
+correct permissions (to jsha's Fly account), run `flyctl deploy` to redeploy the
+service.
