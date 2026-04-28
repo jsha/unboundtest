@@ -1,4 +1,4 @@
-FROM alpine:latest AS unboundtest
+FROM alpine:edge AS unboundtest
 RUN apk update
 RUN apk add go
 COPY *.go go.* /unboundtest-repo/
